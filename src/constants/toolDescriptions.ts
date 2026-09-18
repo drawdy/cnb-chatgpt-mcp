@@ -40,6 +40,7 @@ export const toolDescriptions = {
   // 合并请求工具
   [ToolNames.LIST_PULLS]: '获取CNB平台指定仓库的合并请求列表',
   [ToolNames.GET_PULL]: '获取CNB平台指定合并请求的信息',
+  [ToolNames.GET_PULL_CHANGES]: '获取指定合并请求的提交及文件差异，用于代码评审和合并前检查',
   [ToolNames.CREATE_PULL]: '在CNB平台指定的仓库创建一个新合并请求',
   [ToolNames.UPDATE_PULL]: '更新CNB平台指定合并请求的信息',
   [ToolNames.MERGE_PULL]: '合并CNB平台指定的合并请求',
