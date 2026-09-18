@@ -10,6 +10,17 @@ export enum ToolNames {
   GET_CURRENT_REPOSITORY = 'cnb_get_current_repository',
   GET_REPOSITORY = 'cnb_get_repository',
   CREATE_REPOSITORY = 'cnb_create_repository',
+  // Git / 研发工具
+  GET_HEAD = 'cnb_get_head',
+  LIST_BRANCHES = 'cnb_list_branches',
+  GET_BRANCH = 'cnb_get_branch',
+  CREATE_BRANCH = 'cnb_create_branch',
+  GET_CONTENT = 'cnb_get_content',
+  LIST_COMMITS = 'cnb_list_commits',
+  GET_COMMIT = 'cnb_get_commit',
+  COMPARE_COMMITS = 'cnb_compare_commits',
+  GET_COMMIT_STATUSES = 'cnb_get_commit_statuses',
+  APPLY_PATCH = 'cnb_apply_patch',
   // ISSUE 工具
   LIST_ISSUES = 'cnb_list_issues',
   GET_ISSUE = 'cnb_get_issue',
