@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-bookworm-slim AS build
+FROM docker.cnb.cool/bookbridge/public/node:24.21.0-trixie-slim AS build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY src ./src
 RUN npm run generate:schema && npm run build
 
 
-FROM node:22-bookworm-slim AS runtime
+FROM docker.cnb.cool/bookbridge/public/node:24.21.0-trixie-slim AS runtime
 
 ENV NODE_ENV=production \
     APP_PORT=3000
