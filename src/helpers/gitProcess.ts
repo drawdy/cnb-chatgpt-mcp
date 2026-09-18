@@ -72,46 +72,14 @@ async function run(
   });
 }
 
-async function createAskPass(directory: string) {
-  if (process.platform === 'win32') {
-    const path = join(directory, 'cnb-askpass.cmd');
-    await writeFile(
-      path,
-      '@echo off\r\necho %CNB_MCP_GIT_ASKPASS_VALUE%\r\n',
-      'utf8'
-    );
-    return path;
-  }
-
-  const path = join(directory, 'cnb-askpass.sh');
-  await writeFile(path, '#!/bin/sh\nprintf "%s\\n" "$CNB_MCP_GIT_ASKPASS_VALUE"\n', 'utf8');
-  await chmod(path, 0o700);
-  return path;
-}
-
-async function withAskPass(
-  askPass: string,
-  token: string,
-  value: 'username' | 'password',
-  fn: (env: NodeJS.ProcessEnv) => Promise<string>
-) {
-  const env = {
-    ...process.env,
-    GIT_TERMINAL_PROMPT: '0',
-    GIT_ASKPASS: askPass,
-    CNB_MCP_GIT_ASKPASS_VALUE: value === 'username' ? 'cnb' : token
-  };
-  return fn(env);
-}
-
 async function runAuthenticatedGit(
-  askPass: string,
+  authDirectory: string,
   token: string,
   args: string[],
   cwd?: string
-) {
-  const wrapper = join(cwd ?? tmpdir(), process.platform === 'win32' ? 'git-auth.cmd' : 'git-auth.sh');
+): Promise<string> {
   const isWindows = process.platform === 'win32';
+  const wrapper = join(authDirectory, isWindows ? 'git-auth.cmd' : 'git-auth.sh');
   const script = isWindows
     ? '@echo off\r\nset prompt=%1\r\nif not "%prompt:Username=%"=="%prompt%" (echo cnb) else (echo %CNB_MCP_GIT_TOKEN%)\r\n'
     : '#!/bin/sh\ncase "$1" in *Username*) printf "%s\\n" cnb ;; *) printf "%s\\n" "$CNB_MCP_GIT_TOKEN" ;; esac\n';
@@ -130,6 +98,22 @@ async function runAuthenticatedGit(
   });
 }
 
+async function resolveStartPoint(worktree: string, baseRef?: string): Promise<string> {
+  if (!baseRef) return 'origin/HEAD';
+
+  const candidates = [`origin/${baseRef}`, baseRef];
+  for (const candidate of candidates) {
+    try {
+      await run('git', ['rev-parse', '--verify', candidate], { cwd: worktree });
+      return candidate;
+    } catch {
+      // Try the next candidate.
+    }
+  }
+
+  throw new Error(`Unable to resolve base ref: ${baseRef}`);
+}
+
 export async function applyPatchAndPush(options: ApplyPatchOptions): Promise<ApplyPatchResult> {
   validateRepo(options.repo);
   validateRef(options.branch);
@@ -142,7 +126,13 @@ export async function applyPatchAndPush(options: ApplyPatchOptions): Promise<App
 
   try {
     const repositoryUrl = `https://cnb.cool/${options.repo}`;
-    await runAuthenticatedGit(root, options.token, ['clone', '--filter=blob:none', '--no-checkout', repositoryUrl, worktree]);
+    await runAuthenticatedGit(root, options.token, [
+      'clone',
+      '--filter=blob:none',
+      '--no-checkout',
+      repositoryUrl,
+      worktree
+    ]);
 
     const remoteBranch = `origin/${options.branch}`;
     let branchExists = true;
@@ -155,23 +145,35 @@ export async function applyPatchAndPush(options: ApplyPatchOptions): Promise<App
     if (branchExists) {
       await run('git', ['checkout', '-B', options.branch, remoteBranch], { cwd: worktree });
     } else {
-      const startPoint = options.baseRef ? `origin/${options.baseRef}` : 'origin/HEAD';
+      const startPoint = await resolveStartPoint(worktree, options.baseRef);
       await run('git', ['checkout', '-b', options.branch, startPoint], { cwd: worktree });
     }
 
-    await run('git', ['apply', '--check', '--whitespace=nowarn', '-'], { cwd: worktree, input: options.patch });
-    await run('git', ['apply', '--whitespace=nowarn', '-'], { cwd: worktree, input: options.patch });
+    await run('git', ['apply', '--check', '--whitespace=nowarn', '-'], {
+      cwd: worktree,
+      input: options.patch
+    });
+    await run('git', ['apply', '--whitespace=nowarn', '-'], {
+      cwd: worktree,
+      input: options.patch
+    });
 
     const status = await run('git', ['status', '--porcelain'], { cwd: worktree });
     if (!status) throw new Error('Patch produced no changes');
 
     await run('git', ['add', '-A'], { cwd: worktree });
     await run('git', ['config', 'user.name', options.authorName ?? 'CNB MCP'], { cwd: worktree });
-    await run('git', ['config', 'user.email', options.authorEmail ?? 'cnb-mcp@localhost'], { cwd: worktree });
+    await run('git', ['config', 'user.email', options.authorEmail ?? 'cnb-mcp@localhost'], {
+      cwd: worktree
+    });
     await run('git', ['commit', '-m', options.commitMessage], { cwd: worktree });
 
     const commit = await run('git', ['rev-parse', 'HEAD'], { cwd: worktree });
-    const changedFiles = (await run('git', ['diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD'], { cwd: worktree }))
+    const changedFiles = (
+      await run('git', ['diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD'], {
+        cwd: worktree
+      })
+    )
       .split('\n')
       .filter(Boolean);
 
