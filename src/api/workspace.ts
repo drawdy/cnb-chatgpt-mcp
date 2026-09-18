@@ -2,6 +2,16 @@ import CnbApiClient from './client.js';
 
 import type { operations, definitions } from '../schema.js';
 
+export interface ListWorkspaceParams {
+  branch?: string;
+  start?: string;
+  end?: string;
+  page?: number;
+  page_size?: number;
+  slug?: string;
+  status?: 'running' | 'closed';
+}
+
 export async function listWorkspace(client: CnbApiClient, params?: ListWorkspaceParams): Promise<Workspace> {
   const url = new URL('/workspace/list', client.baseUrl);
   if (params) {
@@ -22,8 +32,6 @@ export async function deleteWorkspace(
     header: { 'Content-Type': 'application/json' }
   });
 }
-
-export type ListWorkspaceParams = operations['ListWorkspaces']['parameters']['query'];
 
 export type Workspace = definitions['dto.WorkspaceListResult'];
 

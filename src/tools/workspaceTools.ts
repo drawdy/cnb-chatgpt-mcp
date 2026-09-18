@@ -16,15 +16,15 @@ export default function registerWorkspaceTools(server: McpServer, client: CnbApi
         .describe('分支名，例如：main'),
       start: z
         .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('查询结束时间，格式：YYYY-MM-DD HH:mm:ssZZ，例如：2024-12-01 00:00:00+0800'),
+        .describe('查询开始时间，格式：YYYY-MM-DD HH:mm:ssZZ，例如：2024-12-01 00:00:00+0800'),
       end: z
         .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('查询开始时间，格式：YYYY-MM-DD HH:mm:ssZZ，例如：2024-12-01 00:00:00+0800'),
+        .describe('查询结束时间，格式：YYYY-MM-DD HH:mm:ssZZ，例如：2024-12-01 00:00:00+0800'),
       page: z
-        .preprocess((val) => (val === null ? undefined : val), z.number().optional())
+        .preprocess((val) => (val === null ? undefined : val), z.number().int().positive().optional())
         .describe('分页页码，从 1 开始，默认为 1'),
-      pageSize: z
-        .preprocess((val) => (val === null ? undefined : val), z.number().optional())
+      page_size: z
+        .preprocess((val) => (val === null ? undefined : val), z.number().int().min(1).max(100).optional())
         .describe('每页条数，默认为 20，最高 100'),
       slug: z
         .preprocess((val) => (val === null ? undefined : val), z.string().optional())
@@ -33,12 +33,12 @@ export default function registerWorkspaceTools(server: McpServer, client: CnbApi
         .preprocess((val) => (val === null ? undefined : val), z.enum(['running', 'closed']).optional())
         .describe('开发环境状态，running: 开发环境已启动，closed：开发环境已关闭，默认为所有状态')
     },
-    async ({ branch, page, pageSize, start, end, slug, status }) => {
+    async ({ branch, page, page_size, start, end, slug, status }) => {
       try {
         const workspaces = await listWorkspace(client, {
           branch,
           page,
-          pageSize,
+          page_size,
           start,
           end,
           slug,

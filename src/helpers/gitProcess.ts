@@ -142,11 +142,13 @@ export async function applyPatchAndPush(options: ApplyPatchOptions): Promise<App
       branchExists = false;
     }
 
+    // A partial clone can lazily fetch promised blobs while checking out. Private
+    // repositories therefore need the same transient credentials used by clone/push.
     if (branchExists) {
-      await run('git', ['checkout', '-B', options.branch, remoteBranch], { cwd: worktree });
+      await runAuthenticatedGit(root, options.token, ['checkout', '-B', options.branch, remoteBranch], worktree);
     } else {
       const startPoint = await resolveStartPoint(worktree, options.baseRef);
-      await run('git', ['checkout', '-b', options.branch, startPoint], { cwd: worktree });
+      await runAuthenticatedGit(root, options.token, ['checkout', '-b', options.branch, startPoint], worktree);
     }
 
     await run('git', ['apply', '--check', '--whitespace=nowarn', '-'], {

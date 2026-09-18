@@ -1,16 +1,44 @@
 import CnbApiClient from './client.js';
 
-import type { operations, definitions } from '../schema.js';
+import type { definitions } from '../schema.js';
+
+export interface ListRepositoriesParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  filter_type?: 'private' | 'public' | 'secret';
+  role?: 'Guest' | 'Reporter' | 'Developer' | 'Master' | 'Owner';
+  flags?: string;
+  flags_match?: 'intersection' | 'union';
+  status?: 'active' | 'archived';
+  order_by?: 'created_at' | 'last_updated_at' | 'stars' | 'slug_path' | 'forks';
+  desc?: boolean;
+}
+
+export interface ListGroupRepositoriesParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  filter_type?: 'private' | 'public' | 'secret';
+  flags?: string;
+  flags_match?: 'intersection' | 'union';
+  status?: 'active' | 'archived';
+  descendant?: 'all' | 'sub' | 'grand';
+  order_by?: 'created_at' | 'last_updated_at' | 'stars' | 'slug_path' | 'forks';
+  desc?: boolean;
+}
+
+function addQuery(path: string, client: CnbApiClient, params?: object) {
+  const url = new URL(path, client.baseUrl);
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value === undefined) continue;
+    url.searchParams.set(key, String(value));
+  }
+  return `${url.pathname}${url.search}`;
+}
 
 export async function listRepositories(client: CnbApiClient, params?: ListRepositoriesParams): Promise<Repository[]> {
-  const url = new URL('/user/repos', client.baseUrl);
-  if (params) {
-    for (const [key, value] of Object.entries(params)) {
-      if (value === undefined) continue;
-      url.searchParams.set(key, value.toString());
-    }
-  }
-  return client.request<Repository[]>('GET', `${url.pathname}${url.search}`);
+  return client.request<Repository[]>('GET', addQuery('/user/repos', client, params));
 }
 
 export async function listGroupRepositories(
@@ -18,14 +46,7 @@ export async function listGroupRepositories(
   group: string,
   params?: ListGroupRepositoriesParams
 ): Promise<GroupRepository[]> {
-  const url = new URL(`/${group}/-/repos`, client.baseUrl);
-  if (params) {
-    for (const [key, value] of Object.entries(params)) {
-      if (value === undefined) continue;
-      url.searchParams.set(key, value.toString());
-    }
-  }
-  return client.request<GroupRepository[]>('GET', `${url.pathname}${url.search}`);
+  return client.request<GroupRepository[]>('GET', addQuery(`/${group}/-/repos`, client, params));
 }
 
 export async function getRepository(client: CnbApiClient, repo: string): Promise<Repository> {
@@ -57,10 +78,6 @@ export async function createRepository(
     return { status: response.status, message: response.statusText };
   }
 }
-
-export type ListRepositoriesParams = operations['GetRepos']['parameters']['query'];
-
-export type ListGroupRepositoriesParams = operations['GetGroupSubRepos']['parameters']['query'];
 
 export type Repository = definitions['dto.Repos4User'];
 
