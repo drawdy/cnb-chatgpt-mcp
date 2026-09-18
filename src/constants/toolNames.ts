@@ -37,6 +37,7 @@ export enum ToolNames {
   // 合并请求工具
   LIST_PULLS = 'cnb_list_pulls',
   GET_PULL = 'cnb_get_pull',
+  GET_PULL_CHANGES = 'cnb_get_pull_changes',
   CREATE_PULL = 'cnb_create_pull',
   UPDATE_PULL = 'cnb_update_pull',
   MERGE_PULL = 'cnb_merge_pull',
