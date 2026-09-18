@@ -23,16 +23,6 @@ export async function deleteWorkspace(
   });
 }
 
-export async function startWorkspace(
-  client: CnbApiClient,
-  repo: string,
-  params: StartWorkspaceParams
-): Promise<StartWorkspaceResponse> {
-  return client.request<StartWorkspaceResponse>('POST', `/${repo}/-/workspace/start`, params, {
-    header: { 'Content-Type': 'application/json' }
-  });
-}
-
 export type ListWorkspaceParams = operations['ListWorkspaces']['parameters']['query'];
 
 export type Workspace = definitions['dto.WorkspaceListResult'];
@@ -40,7 +30,3 @@ export type Workspace = definitions['dto.WorkspaceListResult'];
 export type DeleteWorkspaceParams = operations['DeleteWorkspace']['parameters']['body']['request'];
 
 export type DeleteWorkspaceResponse = definitions['dto.WorkspaceDeleteResult'];
-
-export type StartWorkspaceParams = operations['StartWorkspace']['parameters']['body']['request'];
-
-export type StartWorkspaceResponse = definitions['dto.StartWorkspaceResult'];
