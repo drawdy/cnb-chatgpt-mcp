@@ -17,7 +17,7 @@
     "format:check": "prettier --check src",
     "format:fix": "prettier --write src",
     "build:bundle": "webpack --mode=production",
-    "generate:schema": "openapi-typescript swagger.json -o src/schema.d.ts",
+    "generate:schema": "npx --yes openapi-typescript@5.4.2 swagger.json -o src/schema.d.ts",
     "check": "npm run generate:schema && npm run lint && npm run format:check && npm run build"
   },
   "repository": {
