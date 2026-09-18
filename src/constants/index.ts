@@ -1,5 +1,5 @@
 export enum RepoVisibility {
-  private = 'Private',
-  public = 'Public',
-  secret = 'Secret'
+  private = 0,
+  public = 10,
+  secret = 20
 }
