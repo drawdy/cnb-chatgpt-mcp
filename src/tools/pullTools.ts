@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ToolNames } from '../constants/toolNames.js';
 import { toolDescriptions } from '../constants/toolDescriptions.js';
 import CnbApiClient from '../api/client.js';
+import { compareCommits } from '../api/git.js';
 import {
   listPulls,
   getPull,
@@ -61,6 +62,29 @@ export default function registerPullTools(server: McpServer, client: CnbApiClien
         return formatTextToolResult(JSON.stringify(pull, null, 2), ToolNames.GET_PULL);
       } catch (error) {
         return formatToolError(error, ToolNames.GET_PULL);
+      }
+    }
+  );
+
+  server.tool(
+    ToolNames.GET_PULL_CHANGES,
+    toolDescriptions[ToolNames.GET_PULL_CHANGES],
+    {
+      repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
+      number: z.number().describe('Pull Request编号')
+    },
+    async ({ repo, number }) => {
+      try {
+        const pull = await getPull(client, repo, number);
+        const base = pull.base?.sha ?? pull.base?.ref;
+        const head = pull.head?.sha ?? pull.head?.ref;
+        if (!base || !head) {
+          throw new Error('Pull Request缺少base/head ref，无法计算变更');
+        }
+        const changes = await compareCommits(client, repo, base, head);
+        return formatTextToolResult(JSON.stringify(changes, null, 2), ToolNames.GET_PULL_CHANGES);
+      } catch (error) {
+        return formatToolError(error, ToolNames.GET_PULL_CHANGES);
       }
     }
   );
