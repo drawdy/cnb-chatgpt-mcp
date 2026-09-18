@@ -68,5 +68,4 @@ export default function registerWorkspaceTools(server: McpServer, client: CnbApi
       }
     }
   );
-
 }
