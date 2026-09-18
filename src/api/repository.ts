@@ -28,11 +28,7 @@ export interface ListGroupRepositoriesParams {
   desc?: boolean;
 }
 
-function addQuery(
-  path: string,
-  client: CnbApiClient,
-  params?: Record<string, string | number | boolean | undefined>
-) {
+function addQuery(path: string, client: CnbApiClient, params?: Record<string, string | number | boolean | undefined>) {
   const url = new URL(path, client.baseUrl);
   for (const [key, value] of Object.entries(params ?? {})) {
     if (value === undefined) continue;
