@@ -211,7 +211,7 @@ compose.yml
 Dockerfile 使用多阶段构建：
 
 ~~~text
-node:22-bookworm-slim
+docker.cnb.cool/bookbridge/public/node:24.21.0-trixie-slim
         |
         +-- build stage
         |     npm ci
@@ -232,7 +232,7 @@ node:22-bookworm-slim
 - Health：`GET /healthz`
 - Port：`3000`
 - Restart policy：`unless-stopped`
-- Runtime user：Node 官方镜像内置的非 root `node` 用户
+- Runtime user：基础镜像内置的非 root `node` 用户
 
 `Dockerfile` 自带健康检查，因此可以通过：
 
