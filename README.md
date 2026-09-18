@@ -2,7 +2,7 @@
 
 面向 ChatGPT 和其他支持 MCP 的 AI 客户端提供 CNB 操作能力。通过 MCP Tools，可以在对话中读取仓库、查看分支和 Commit、管理 Issue / Pull Request、执行代码修改、查询和触发 CNB Build 等操作。
 
-> https://api.cnb.cool 是 CNB OpenAPI 地址，不是 MCP Server 地址。ChatGPT 应连接本服务暴露的 /mcp 端点。
+> `https://api.cnb.cool` 是 CNB OpenAPI 地址，不是 MCP Server 地址。ChatGPT 应连接本服务暴露的 `/mcp` 端点。
 
 ## 能做什么
 
@@ -10,7 +10,7 @@
 | --- | --- |
 | 组织 / 仓库 | 查询组织、仓库，创建仓库 |
 | Git | 读取文件和目录、查看/创建分支、查询 Commit、比较 Commit、查询 Commit Status |
-| 代码修改 | 通过 cnb_apply_patch 应用多文件 unified diff，自动 Commit 并 Push 到 CNB |
+| 代码修改 | 通过 `cnb_apply_patch` 应用多文件 unified diff，自动 Commit 并 Push 到 CNB |
 | Issue | 查询、创建、更新、评论、标签管理 |
 | Pull Request | 查询、创建、更新、查看变更、评论、合并 |
 | CNB Build | 查询构建、查看状态、启动/停止构建、读取构建信息 |
@@ -19,39 +19,31 @@
 
 常用研发工具包括：
 
-cnb_get_content、cnb_list_branches、cnb_create_branch、cnb_list_commits、cnb_get_commit、cnb_compare_commits、cnb_get_commit_statuses、cnb_apply_patch、cnb_get_pull_changes。
+`cnb_get_content`、`cnb_list_branches`、`cnb_create_branch`、`cnb_list_commits`、`cnb_get_commit`、`cnb_compare_commits`、`cnb_get_commit_statuses`、`cnb_apply_patch`、`cnb_get_pull_changes`。
 
 ---
 
-## 最简单的使用方法
+## 推荐：Docker 一键启动
 
-下面按“第一次使用也能直接跑起来”的方式说明。
+这是最简单的使用方式。只需要安装 Docker，不需要在宿主机安装 Node.js 或 npm。
 
-### 1. 准备环境
+### 1. 准备 Docker
 
-需要：
-
-- Node.js 18 或更高版本
-- 一个可访问 CNB 的网络环境
-- 一个具有相应 CNB 权限的 Access Token
-
-先确认 Node.js：
+安装 Docker Engine / Docker Desktop，并确认 Docker Compose 可用：
 
 ~~~bash
-node -v
+docker --version
+docker compose version
 ~~~
 
-### 2. 下载代码并安装依赖
+### 2. 下载代码
 
 ~~~bash
 git clone https://github.com/drawdy/cnb-chatgpt-mcp.git
 cd cnb-chatgpt-mcp
-npm ci
 ~~~
 
 ### 3. 配置 CNB Token
-
-复制环境变量模板。
 
 Linux / macOS：
 
@@ -65,53 +57,78 @@ Windows PowerShell：
 Copy-Item .env.example .env
 ~~~
 
-然后编辑 .env：
+编辑 `.env`，至少填写 `API_TOKEN`：
 
 ~~~dotenv
 API_BASE_URL=https://api.cnb.cool
 API_TOKEN=你的_CNB_Token
 APP_PORT=3000
+MODE_STATELESS=
 ~~~
 
 不要把真实 Token 提交到 Git。
 
-### 4. 编译并启动 MCP Server
+### 4. 一条命令构建并启动
 
 ~~~bash
-npm run build
-npm start
+docker compose up -d --build
 ~~~
 
-默认启动 Streamable HTTP MCP Server：
+该命令会：
 
-~~~text
-MCP endpoint:   http://127.0.0.1:3000/mcp
-Health check:   http://127.0.0.1:3000/healthz
+1. 构建 TypeScript 项目；
+2. 生成运行镜像；
+3. 启动 MCP Server；
+4. 将宿主机端口映射到容器；
+5. 自动启用健康检查。
+
+查看状态：
+
+~~~bash
+docker compose ps
 ~~~
 
-验证服务是否启动成功：
+查看日志：
+
+~~~bash
+docker compose logs -f
+~~~
+
+验证健康检查：
 
 ~~~bash
 curl http://127.0.0.1:3000/healthz
 ~~~
 
-正常情况下返回：
+Windows PowerShell 也可以：
+
+~~~powershell
+Invoke-RestMethod http://127.0.0.1:3000/healthz
+~~~
+
+正常返回：
 
 ~~~json
 {"status":"ok","service":"cnb-chatgpt-mcp"}
 ~~~
 
-### 5. 让 ChatGPT 连接这个 MCP
+此时 MCP 地址为：
 
-ChatGPT 需要访问一个它能够连接到的 MCP 地址。
+~~~text
+http://127.0.0.1:3000/mcp
+~~~
 
-如果服务部署在公网并配置了 HTTPS，例如：
+如果修改了 `APP_PORT`，端口也随之变化。
+
+### 5. 配置到 ChatGPT
+
+如果 Docker 服务部署在公网服务器，并已经通过域名和 HTTPS 暴露，例如：
 
 ~~~text
 https://mcp.example.com/mcp
 ~~~
 
-那么在 ChatGPT 的自定义 MCP / 插件连接配置中填写这个地址。
+就在 ChatGPT 的自定义 MCP / 插件连接配置中填写这个地址。
 
 不要填写：
 
@@ -119,9 +136,9 @@ https://mcp.example.com/mcp
 https://api.cnb.cool
 ~~~
 
-因为它是 CNB 的 REST/OpenAPI 服务，并不实现 MCP 协议。
+因为它是 CNB 的 REST/OpenAPI 服务，不是 MCP Server。
 
-如果 MCP Server 只运行在本机或内网，需要使用 MCP 客户端支持的 Tunnel / 反向代理方式，让 ChatGPT 能访问该服务。
+如果 MCP Server 只运行在本机或内网，需要使用 MCP 客户端支持的 Tunnel / 反向代理方式，让 ChatGPT 能访问该 MCP 服务。
 
 ### 6. 开始使用
 
@@ -145,46 +162,155 @@ https://api.cnb.cool
 查看这个 Commit 对应的构建状态
 ~~~
 
----
+### Docker 常用命令
 
-## 两种运行模式
-
-### Streamable HTTP
-
-适合 ChatGPT、远程 MCP 客户端和服务器部署。
+更新代码后重新构建并启动：
 
 ~~~bash
+git pull
+docker compose up -d --build
+~~~
+
+停止并删除容器：
+
+~~~bash
+docker compose down
+~~~
+
+重启：
+
+~~~bash
+docker compose restart
+~~~
+
+查看最近日志：
+
+~~~bash
+docker compose logs --tail=200
+~~~
+
+强制重新构建、不使用 Docker Build Cache：
+
+~~~bash
+docker compose build --no-cache
+docker compose up -d
+~~~
+
+---
+
+## Docker 实现说明
+
+仓库包含：
+
+~~~text
+Dockerfile
+compose.yml
+.dockerignore
+~~~
+
+Dockerfile 使用多阶段构建：
+
+~~~text
+node:22-bookworm-slim
+        |
+        +-- build stage
+        |     npm ci
+        |     generate:schema
+        |     TypeScript build
+        |
+        +-- runtime stage
+              production dependencies
+              git
+              dist/
+~~~
+
+运行镜像额外安装了 `git`，因为 `cnb_apply_patch` 需要在临时工作目录中执行 Git clone / commit / push。
+
+容器默认：
+
+- MCP：`POST /mcp`
+- Health：`GET /healthz`
+- Port：`3000`
+- Restart policy：`unless-stopped`
+- Runtime user：Node 官方镜像内置的非 root `node` 用户
+
+`Dockerfile` 自带健康检查，因此可以通过：
+
+~~~bash
+docker inspect --format='{{json .State.Health}}' cnb-chatgpt-mcp
+~~~
+
+查看容器健康状态。
+
+---
+
+## 环境变量
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `API_BASE_URL` | `https://api.cnb.cool` | CNB OpenAPI 地址 |
+| `API_TOKEN` | 空 | 服务端 CNB Token |
+| `CNB_TOKEN` | 空 | `API_TOKEN` 未设置时的备用 Token |
+| `APP_PORT` | `3000` | HTTP MCP Server 监听端口 |
+| `MODE_STATELESS` | 空 | 设置为 `1` / `true` 时使用无状态模式 |
+
+CNB Token 的读取优先级为：
+
+1. MCP HTTP 请求中的 `Authorization: Bearer <token>`
+2. 环境变量 `API_TOKEN`
+3. 环境变量 `CNB_TOKEN`
+
+### 公网部署注意事项
+
+不要把一个配置了高权限 `API_TOKEN` 的 MCP Server 无保护地暴露到公网。
+
+生产部署至少应满足以下一种方式：
+
+- MCP 客户端按请求提供 Bearer Token；
+- 在 MCP Server 前增加可靠的认证层；
+- 将服务限制在受信任网络或安全 Tunnel 内。
+
+如果希望客户端按请求提供 Bearer Token，可以让 `.env` 中的 `API_TOKEN` 保持为空。
+
+代码写入场景中的 `cnb_apply_patch` 使用临时 `GIT_ASKPASS` 传递 Token，不会把凭据写进 Git remote URL 或仓库配置。
+
+---
+
+## 不使用 Docker：直接运行 Node.js
+
+环境要求：Node.js 18 或更高版本。
+
+安装依赖并构建：
+
+~~~bash
+npm ci
+npm run generate:schema
 npm run build
+~~~
+
+启动 Streamable HTTP MCP Server：
+
+~~~bash
 npm start
 ~~~
 
-默认：
+默认地址：
 
-- MCP：POST /mcp
-- Health：GET /healthz
-- Port：3000
-
-可通过环境变量修改：
-
-~~~dotenv
-APP_PORT=3000
-MODE_STATELESS=
-API_BASE_URL=https://api.cnb.cool
-API_TOKEN=
+~~~text
+MCP:     http://127.0.0.1:3000/mcp
+Health:  http://127.0.0.1:3000/healthz
 ~~~
 
-如果设置 MODE_STATELESS=1，服务使用无状态 MCP Transport。
+### STDIO 模式
 
-### STDIO
-
-适合本地 MCP 客户端：
+本地 MCP 客户端还可以使用 STDIO：
 
 ~~~bash
 npm run build
 API_TOKEN=<CNB_TOKEN> npm run start:stdio
 ~~~
 
-示例配置：
+示例：
 
 ~~~json
 {
@@ -202,49 +328,16 @@ API_TOKEN=<CNB_TOKEN> npm run start:stdio
 
 ---
 
-## 身份认证
-
-CNB Token 的读取优先级为：
-
-1. MCP HTTP 请求中的 Authorization: Bearer <token>
-2. 环境变量 API_TOKEN
-3. 环境变量 CNB_TOKEN
-
-API_BASE_URL 默认是：
-
-~~~text
-https://api.cnb.cool
-~~~
-
-### 公网部署注意事项
-
-不要把一个配置了高权限 API_TOKEN 的 MCP Server 无保护地暴露到公网。
-
-生产部署至少应满足以下一种方式：
-
-- MCP 客户端按请求提供 Bearer Token；
-- 在 MCP Server 前增加可靠的认证层；
-- 将服务限制在受信任网络或安全 Tunnel 内。
-
-代码写入场景中的 cnb_apply_patch 使用临时 GIT_ASKPASS 传递 Token，不会把凭据写进 Git remote URL 或仓库配置。
-
----
-
 ## 开发与验证
-
-安装依赖：
-
-~~~bash
-npm ci
-~~~
 
 完整检查：
 
 ~~~bash
+npm ci
 npm run check
 ~~~
 
-该命令依次执行：
+`npm run check` 依次执行：
 
 ~~~text
 generate:schema
@@ -253,10 +346,18 @@ generate:schema
 -> TypeScript build
 ~~~
 
-仓库只保留一份 swagger.json OpenAPI 快照，用于生成 src/schema.d.ts。生成文件不提交到 Git：
+CI 除了执行上述检查，还会实际运行：
+
+~~~bash
+docker compose up -d --build
+~~~
+
+并检查 `/healthz` 和容器内的 Git 命令，以避免 Dockerfile / Compose 配置失效。
+
+仓库只保留一份 `swagger.json` OpenAPI 快照，用于生成 `src/schema.d.ts`。生成文件不提交到 Git：
 
 ~~~bash
 npm run generate:schema
 ~~~
 
-面向 AI Coding 的维护约定见 AGENTS.md。
+面向 AI Coding 的维护约定见 `AGENTS.md`。

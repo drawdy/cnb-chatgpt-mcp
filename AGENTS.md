@@ -17,6 +17,7 @@ This repository provides CNB operations to ChatGPT and other MCP clients. The ma
 - Existing Build and Knowledge Base adapters use the legacy CNB request wrapper; avoid unrelated refactors in those paths.
 - Update README.md whenever connection behavior, authentication, runtime commands, or the exposed tool surface materially changes.
 - Never commit src/schema.d.ts; regenerate it with npm run generate:schema.
+- Keep Dockerfile and compose.yml aligned with the documented runtime environment. The Docker runtime must retain git because cnb_apply_patch uses native Git operations.
 
 ## Validation
 
@@ -27,7 +28,7 @@ npm ci
 npm run check
 ~~~
 
-npm run check performs schema generation, ESLint, Prettier validation, and TypeScript compilation.
+npm run check performs schema generation, ESLint, Prettier validation, and TypeScript compilation. CI also performs a Docker Compose smoke test using docker compose up -d --build and verifies /healthz plus the git binary inside the runtime container.
 
 ## Authentication and secrets
 

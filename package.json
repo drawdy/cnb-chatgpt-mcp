@@ -2,7 +2,7 @@
   "name": "cnb-chatgpt-mcp",
   "version": "0.7.0",
   "private": true,
-  "description": "Maintained CNB MCP Server fork for ChatGPT-driven repository development and CNB automation.",
+  "description": "CNB MCP Server for ChatGPT-driven repository development and CNB automation.",
   "main": "./dist/stdio.js",
   "bin": {
     "cnb-mcp-stdio": "dist/stdio.js",
