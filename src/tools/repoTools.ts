@@ -19,7 +19,7 @@ export default function registerRepoTools(server: McpServer, client: CnbApiClien
       page_size: z.number().default(10).describe('每页多少条数据,默认值为10'),
       search: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('查询关键字'),
       filter_type: z
-        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'secret']).optional())
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'encrypted']).optional())
         .describe('仓库类型,为空表示所有仓库类型,默认值为空'),
       role: z
         .preprocess(
@@ -60,7 +60,7 @@ export default function registerRepoTools(server: McpServer, client: CnbApiClien
       page_size: z.number().default(10).describe('每页多少条数据,默认值为10'),
       search: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('仓库关键字'),
       filter_type: z
-        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'secret']).optional())
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'encrypted']).optional())
         .describe('仓库类型'),
       descendant: z
         .preprocess((val) => (val === null ? undefined : val), z.enum(['all', 'sub', 'grand']).optional())
