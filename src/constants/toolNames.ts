@@ -1,0 +1,49 @@
+export enum ToolNames {
+  // 组织工具
+  LIST_GROUPS = 'cnb_list_groups',
+  LIST_SUB_GROUPS = 'cnb_list_sub_groups',
+  GET_GROUP = 'cnb_get_group',
+  CREATE_GROUP = 'cnb_create_group',
+  // 仓库工具
+  LIST_REPOSITORIES = 'cnb_list_repositories',
+  LIST_GROUP_REPOSITORIES = 'cnb_list_group_repositories',
+  GET_CURRENT_REPOSITORY = 'cnb_get_current_repository',
+  GET_REPOSITORY = 'cnb_get_repository',
+  CREATE_REPOSITORY = 'cnb_create_repository',
+  // ISSUE 工具
+  LIST_ISSUES = 'cnb_list_issues',
+  GET_ISSUE = 'cnb_get_issue',
+  CREATE_ISSUE = 'cnb_create_issue',
+  UPDATE_ISSUE = 'cnb_update_issue',
+  LIST_ISSUE_COMMENTS = 'cnb_list_issue_comments',
+  CREATE_ISSUE_COMMENT = 'cnb_create_issue_comment',
+  UPDATE_ISSUE_COMMENT = 'cnb_update_issue_comment',
+  LIST_ISSUE_LABELS = 'cnb_list_issue_labels',
+  ADD_ISSUE_LABELS = 'cnb_add_issue_labels',
+  SET_ISSUE_LABELS = 'cnb_set_issue_labels',
+  CLEAR_ISSUE_LABELS = 'cnb_clear_issue_labels',
+  REMOVE_ISSUE_LABEL = 'cnb_remove_issue_label',
+  // 合并请求工具
+  LIST_PULLS = 'cnb_list_pulls',
+  GET_PULL = 'cnb_get_pull',
+  CREATE_PULL = 'cnb_create_pull',
+  UPDATE_PULL = 'cnb_update_pull',
+  MERGE_PULL = 'cnb_merge_pull',
+  LIST_PULL_COMMENTS = 'cnb_list_pull_comments',
+  CREATE_PULL_COMMENT = 'cnb_create_pull_comment',
+  // 云原生构建工具
+  BUILD_LOGS_DELETE = 'cnb_buildLogsDelete',
+  BUILD_RUNNER_DOWNLOAD_LOG = 'cnb_buildRunnerDownloadLog',
+  GET_BUILD_LOGS = 'cnb_getBuildLogs',
+  GET_BUILD_STAGE = 'cnb_getBuildStage',
+  GET_BUILD_STATUS = 'cnb_getBuildStatus',
+  START_BUILD = 'cnb_startBuild',
+  STOP_BUILD = 'cnb_stopBuild',
+  // 云原生开发工具
+  LIST_WORKSPACES = 'cnb_list_workspaces',
+  DELETE_WORKSPACE = 'cnb_delete_workspace',
+  START_WORKSPACE = 'cnb_start_workspace',
+  // 知识库工具
+  GET_KNOWLEDGE_BASE_INFO = 'cnb_getKnowledgeBaseInfo',
+  QUERY_KNOWLEDGE_BASE = 'cnb_queryKnowledgeBase'
+}
