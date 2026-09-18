@@ -17,7 +17,9 @@ export default function registerRepoTools(server: McpServer, client: CnbApiClien
     ToolNames.LIST_REPOSITORIES,
     toolDescriptions[ToolNames.LIST_REPOSITORIES],
     {
-      remote_url: optionalString.describe('兼容旧客户端保留；仓库列表权限完全由 CNB Token 决定，此参数不会改变查询范围'),
+      remote_url: optionalString.describe(
+        '兼容旧客户端保留；仓库列表权限完全由 CNB Token 决定，此参数不会改变查询范围'
+      ),
       page: z.number().int().positive().default(1).describe('第几页,从1开始,默认值是1'),
       page_size: z.number().int().min(1).max(100).default(10).describe('每页多少条数据,默认值为10'),
       search: optionalString.describe('查询关键字'),
