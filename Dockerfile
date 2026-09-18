@@ -2,6 +2,8 @@
 
 FROM docker.cnb.cool/bookbridge/public/node:24.21.0-trixie-slim AS build
 
+ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -16,11 +18,20 @@ RUN npm run generate:schema && npm run build
 FROM docker.cnb.cool/bookbridge/public/node:24.21.0-trixie-slim AS runtime
 
 ENV NODE_ENV=production \
-    APP_PORT=3000
+    APP_PORT=3000 \
+    NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
 
 WORKDIR /app
 
-RUN apt-get update \
+RUN sed -i \
+      -e 's|http://deb.debian.org/debian|https://mirrors.tuna.tsinghua.edu.cn/debian|g' \
+      -e 's|https://deb.debian.org/debian|https://mirrors.tuna.tsinghua.edu.cn/debian|g' \
+      -e 's|http://deb.debian.org/debian-security|https://mirrors.tuna.tsinghua.edu.cn/debian-security|g' \
+      -e 's|https://deb.debian.org/debian-security|https://mirrors.tuna.tsinghua.edu.cn/debian-security|g' \
+      -e 's|http://security.debian.org/debian-security|https://mirrors.tuna.tsinghua.edu.cn/debian-security|g' \
+      -e 's|https://security.debian.org/debian-security|https://mirrors.tuna.tsinghua.edu.cn/debian-security|g' \
+      /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
     && apt-get install -y --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
