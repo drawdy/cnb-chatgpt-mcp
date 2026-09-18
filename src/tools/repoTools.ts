@@ -7,43 +7,62 @@ import { createRepository, getRepository, listGroupRepositories, listRepositorie
 import { getUser } from '../api/user.js';
 import { formatTextToolResult, formatToolError } from '../helpers/formatToolResult.js';
 import { getRepoPath } from '../helpers/formatRepoUrl.js';
-import { isRepoPublic } from '../helpers/checkRepoVisibility.js';
+import { buildRepositoryListParams } from '../helpers/repositoryListParams.js';
+
+const optionalString = z.preprocess((val) => (val === null ? undefined : val), z.string().optional());
+const optionalBoolean = z.preprocess((val) => (val === null ? undefined : val), z.boolean().optional());
 
 export default function registerRepoTools(server: McpServer, client: CnbApiClient) {
   server.tool(
     ToolNames.LIST_REPOSITORIES,
     toolDescriptions[ToolNames.LIST_REPOSITORIES],
     {
-      remote_url: z.string().describe('远程仓库URL，需要先执行`git remote get-url origin`命令获取，获取不到传空字符串'),
-      page: z.number().default(1).describe('第几页,从1开始,默认值是1'),
-      page_size: z.number().default(10).describe('每页多少条数据,默认值为10'),
-      search: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('查询关键字'),
+      remote_url: optionalString.describe('兼容旧客户端保留；仓库列表权限完全由 CNB Token 决定，此参数不会改变查询范围'),
+      page: z.number().int().positive().default(1).describe('第几页,从1开始,默认值是1'),
+      page_size: z.number().int().min(1).max(100).default(10).describe('每页多少条数据,默认值为10'),
+      search: optionalString.describe('查询关键字'),
       filter_type: z
-        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'encrypted']).optional())
-        .describe('仓库类型,为空表示所有仓库类型,默认值为空'),
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'secret']).optional())
+        .describe('仓库类型,为空表示所有仓库类型'),
       role: z
         .preprocess(
           (val) => (val === null ? undefined : val),
-          z.enum(['Reporter', 'Developer', 'Master', 'Owner']).optional()
+          z.enum(['Guest', 'Reporter', 'Developer', 'Master', 'Owner']).default('Guest')
         )
-        .describe('最小仓库权限,当用户未指定角色时,需要主动传入Reporter'),
+        .describe('最小仓库权限；默认 Guest，以返回当前 Token 可访问的全部仓库'),
+      flags: optionalString.describe('仓库类型标记，可按 CNB API 约定使用逗号分隔，例如 KnowledgeBase,NPC'),
+      flags_match: z
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['intersection', 'union']).optional())
+        .describe('flags 多值匹配模式'),
+      status: z
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['active', 'archived']).optional())
+        .describe('仓库状态'),
       order_by: z
         .preprocess(
           (val) => (val === null ? undefined : val),
-          z.enum(['created_at', 'last_updated_at', 'stars']).optional()
+          z.enum(['created_at', 'last_updated_at', 'stars', 'slug_path', 'forks']).optional()
         )
         .describe('排序类型,默认值是last_updated_at'),
-      desc: z
-        .preprocess((val) => (val === null ? undefined : val), z.boolean().optional())
-        .describe('是否开启倒叙排序，默认值是false')
+      desc: optionalBoolean.default(true).describe('是否倒序排序，默认值为true')
     },
-    async ({ remote_url, page, page_size, search, filter_type, role, order_by, desc }) => {
-      const isPublic = await isRepoPublic(client, remote_url);
-      if (isPublic) {
-        filter_type = 'public';
-      }
+    async ({ remote_url, page, page_size, search, filter_type, role, flags, flags_match, status, order_by, desc }) => {
       try {
-        const repos = await listRepositories(client, { page, page_size, search, filter_type, role, order_by, desc });
+        const repos = await listRepositories(
+          client,
+          buildRepositoryListParams({
+            remote_url,
+            page,
+            page_size,
+            search,
+            filter_type,
+            role,
+            flags,
+            flags_match,
+            status,
+            order_by,
+            desc
+          })
+        );
         return formatTextToolResult(JSON.stringify(repos, null, 2), ToolNames.LIST_REPOSITORIES);
       } catch (error) {
         return formatToolError(error, ToolNames.LIST_REPOSITORIES);
@@ -56,32 +75,40 @@ export default function registerRepoTools(server: McpServer, client: CnbApiClien
     toolDescriptions[ToolNames.LIST_GROUP_REPOSITORIES],
     {
       group: z.string().describe('组织名称'),
-      page: z.number().default(1).describe('第几页,从1开始,默认值是1'),
-      page_size: z.number().default(10).describe('每页多少条数据,默认值为10'),
-      search: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('仓库关键字'),
+      page: z.number().int().positive().default(1).describe('第几页,从1开始,默认值是1'),
+      page_size: z.number().int().min(1).max(100).default(10).describe('每页多少条数据,默认值为10'),
+      search: optionalString.describe('仓库关键字'),
       filter_type: z
-        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'encrypted']).optional())
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['private', 'public', 'secret']).optional())
         .describe('仓库类型'),
+      flags: optionalString.describe('仓库类型标记，可按 CNB API 约定使用逗号分隔，例如 KnowledgeBase,NPC'),
+      flags_match: z
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['intersection', 'union']).optional())
+        .describe('flags 多值匹配模式'),
+      status: z
+        .preprocess((val) => (val === null ? undefined : val), z.enum(['active', 'archived']).optional())
+        .describe('仓库状态'),
       descendant: z
         .preprocess((val) => (val === null ? undefined : val), z.enum(['all', 'sub', 'grand']).optional())
         .describe('查全部、直接属于当前组织的仓库、子组织的仓库'),
       order_by: z
         .preprocess(
           (val) => (val === null ? undefined : val),
-          z.enum(['created_at', 'last_updated_at', 'stars', 'slug_path']).optional()
+          z.enum(['created_at', 'last_updated_at', 'stars', 'slug_path', 'forks']).optional()
         )
         .describe('排序类型'),
-      desc: z
-        .preprocess((val) => (val === null ? undefined : val), z.boolean().optional())
-        .describe('是否开启倒叙排序，默认值是false')
+      desc: optionalBoolean.default(true).describe('是否倒序排序，默认值为true')
     },
-    async ({ group, page, page_size, search, filter_type, descendant, order_by, desc }) => {
+    async ({ group, page, page_size, search, filter_type, flags, flags_match, status, descendant, order_by, desc }) => {
       try {
         const repos = await listGroupRepositories(client, group, {
           page,
           page_size,
           search,
           filter_type,
+          flags,
+          flags_match,
+          status,
           descendant,
           order_by,
           desc
@@ -113,10 +140,10 @@ export default function registerRepoTools(server: McpServer, client: CnbApiClien
     ToolNames.CREATE_REPOSITORY,
     toolDescriptions[ToolNames.CREATE_REPOSITORY],
     {
-      group: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('仓库所属分组'),
+      group: optionalString.describe('仓库所属分组'),
       name: z.string().describe('仓库名称'),
-      description: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('仓库描述'),
-      license: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('仓库许可'),
+      description: optionalString.describe('仓库描述'),
+      license: optionalString.describe('仓库许可'),
       visibility: z
         .preprocess(
           (val) => (val === null ? undefined : val),
@@ -153,7 +180,6 @@ export default function registerRepoTools(server: McpServer, client: CnbApiClien
           return formatToolError(`无法从远程仓库URL解析出仓库路径: ${remote_url}`, ToolNames.GET_CURRENT_REPOSITORY);
         }
 
-        // 获取仓库信息
         const data = await getRepository(client, repoPath);
         return formatTextToolResult(JSON.stringify(data, null, 2), ToolNames.GET_CURRENT_REPOSITORY);
       } catch (error) {
