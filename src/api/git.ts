@@ -68,11 +68,7 @@ export async function getHead(client: CnbApiClient, repo: string): Promise<Branc
   return client.request<Branch>('GET', `/${repo}/-/git/head`);
 }
 
-export async function listBranches(
-  client: CnbApiClient,
-  repo: string,
-  params?: PageParams
-): Promise<Branch[]> {
+export async function listBranches(client: CnbApiClient, repo: string, params?: PageParams): Promise<Branch[]> {
   return client.request<Branch[]>('GET', addQuery(`/${repo}/-/git/branches`, client, params));
 }
 
@@ -110,11 +106,7 @@ export async function getContent(
   return client.request<RepositoryContent>('GET', addQuery(path, client, { ref }));
 }
 
-export async function listCommits(
-  client: CnbApiClient,
-  repo: string,
-  params?: ListCommitsParams
-): Promise<Commit[]> {
+export async function listCommits(client: CnbApiClient, repo: string, params?: ListCommitsParams): Promise<Commit[]> {
   return client.request<Commit[]>('GET', addQuery(`/${repo}/-/git/commits`, client, params));
 }
 
@@ -137,8 +129,5 @@ export async function getCommitStatuses(
   repo: string,
   commitish: string
 ): Promise<CommitStatus[]> {
-  return client.request<CommitStatus[]>(
-    'GET',
-    `/${repo}/-/git/commit-statuses/${encodeURIComponent(commitish)}`
-  );
+  return client.request<CommitStatus[]>('GET', `/${repo}/-/git/commit-statuses/${encodeURIComponent(commitish)}`);
 }
