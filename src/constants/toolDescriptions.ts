@@ -57,7 +57,6 @@ export const toolDescriptions = {
   // 云原生开发工具
   [ToolNames.LIST_WORKSPACES]: '获取当前用户在CNB平台的云原生开发环境列表',
   [ToolNames.DELETE_WORKSPACE]: '在CNB平台删除指定的云原生开发环境',
-  [ToolNames.START_WORKSPACE]: '在CNB平台启动指定仓库的云原生开发环境',
   // 知识库工具
   [ToolNames.GET_KNOWLEDGE_BASE_INFO]: '获取知识库信息',
   [ToolNames.QUERY_KNOWLEDGE_BASE]: '查询知识库'
