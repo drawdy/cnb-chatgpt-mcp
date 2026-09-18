@@ -5,6 +5,7 @@ export interface RepositoryListToolInput extends ListRepositoriesParams {
 }
 
 export function buildRepositoryListParams(input: RepositoryListToolInput): ListRepositoriesParams {
-  const { remote_url: _remoteUrl, ...params } = input;
+  const params: RepositoryListToolInput = { ...input };
+  delete params.remote_url;
   return params;
 }
