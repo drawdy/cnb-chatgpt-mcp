@@ -27,3 +27,27 @@ jobs:
 
       - name: Validate
         run: npm run check
+
+      - name: Docker Compose smoke test
+        env:
+          API_TOKEN: ci-placeholder
+          APP_PORT: 3100
+        run: |
+          docker compose up -d --build
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3100/healthz; then
+              docker compose exec -T cnb-chatgpt-mcp git --version
+              exit 0
+            fi
+            sleep 1
+          done
+          docker compose ps
+          docker compose logs
+          exit 1
+
+      - name: Stop Docker Compose
+        if: always()
+        env:
+          API_TOKEN: ci-placeholder
+          APP_PORT: 3100
+        run: docker compose down --remove-orphans

@@ -1,0 +1,16 @@
+services:
+  cnb-chatgpt-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cnb-chatgpt-mcp:local
+    container_name: cnb-chatgpt-mcp
+    restart: unless-stopped
+    init: true
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-https://api.cnb.cool}
+      API_TOKEN: ${API_TOKEN:-}
+      APP_PORT: ${APP_PORT:-3000}
+      MODE_STATELESS: ${MODE_STATELESS:-}
+    ports:
+      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
