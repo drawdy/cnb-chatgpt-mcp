@@ -1,103 +1,139 @@
-# CNB MCP Server
+# CNB ChatGPT MCP
 
-CNB(https://cnb.cool) toolkits for LLMs supporting the MCP protocol
+面向 ChatGPT / AI Agent 的 CNB MCP Server。该仓库基于已归档的 CNB 官方 MCP Server 持续维护，重点补齐代码读取、分支、Commit、Pull Request、CI 和多文件代码修改能力，用于 HyperEyes 等项目在 CNB 上进行完整研发闭环。
 
-## Tool List
+> 这是独立维护的 fork，不是 CNB 官方项目。CNB OpenAPI 的上游地址是 `https://api.cnb.cool`；ChatGPT 应连接本项目部署后的 MCP 地址（通常是 `https://<your-domain>/mcp`），不能直接把 CNB OpenAPI 地址当作 MCP Server。
 
-| Tool Name | Tool Description |
-| :----- | :------- |
-| cnb_list_groups | Gets a list of top-level organizations for which the current user has permissions on the CNB platform. |
-| cnb_list_sub_groups | Gets a list of sub-organizations for which the current user has permissions on the CNB platform under a specified organization. |
-| cnb_get_group | Gets information about a specified organization on the CNB platform. |
-| cnb_create_group | Creates a new organization on the CNB platform. |
-| cnb_list_repositories | Gets a list of repositories for which the current user has permissions on the CNB platform. |
-| cnb_list_group_repositories | Gets a list of repositories for which the current user has permissions on the CNB platform under a specified organization. |
-| cnb_get_current_repository | Gets information about the CNB platform repository corresponding to the current workspace. |
-| cnb_get_repository | Gets information about a specified repository on the CNB platform. |
-| cnb_create_repository | Create a new repository on the CNB platform. |
-| cnb_list_issues | Get a list of issues in a specified repository on the CNB platform. |
-| cnb_get_issue | Get information about a specified issue on the CNB platform. |
-| cnb_create_issue | Create a new issue in a specified repository on the CNB platform. To add labels, use the cnb_add_issue_labels tool. |
-| cnb_update_issue | Update information about a specified issue on the CNB platform. To update labels, call the cnb_set_issue_labels tool separately. |
-| cnb_list_issue_comments | Get a list of comments for a specified issue on the CNB platform. |
-| cnb_create_issue_comment | Create a new comment on a specified issue on the CNB platform. |
-| cnb_update_issue_comment | Update the content of a comment on a specified issue on the CNB platform. |
-| cnb_list_issue_labels | Get a list of labels for a specified issue on the CNB platform. |
-| cnb_add_issue_labels | Add one or more labels to a specified issue on the CNB platform. |
-| cnb_set_issue_labels | Change the labels for a specified issue on the CNB platform. |
-| cnb_clear_issue_labels | Clear the labels for a specified issue on the CNB platform. |
-| cnb_remove_issue_label | Remove a specified label from a specified issue on the CNB platform. |
-| cnb_list_pulls | Get a list of merge requests for a specified repository on the CNB platform. |
-| cnb_get_pull | Get information about a merge request specified on the CNB platform |
-| cnb_create_pull | Create a new merge request in a repository specified on the CNB platform |
-| cnb_update_pull | Update information about a merge request specified on the CNB platform |
-| cnb_merge_pull | Merge a merge request specified on the CNB platform |
-| cnb_list_pull_comments | Get a list of comments for a merge request specified on the CNB platform |
-| cnb_create_pull_comment | Create a new comment on a merge request specified on the CNB platform |
-| cnb_buildLogsDelete | Delete pipeline or cloud-native build log content |
-| cnb_buildRunnerDownloadLog | Download pipeline or cloud-native build runner logs |
-| cnb_getBuildLogs | Query pipeline or cloud-native build list |
-| cnb_getBuildStage | Query pipeline or cloud-native build stage details |
-| cnb_getBuildStatus | Query pipeline or cloud-native build status |
-| cnb_startBuild | Start a build |
-| cnb_stopBuild | Stop a build |
-| cnb_list_workspaces | Get a list of the current user's cloud-native development environments on the CNB platform |
-| cnb_delete_workspace | Delete a specified cloud-native development environment on the CNB platform |
-| cnb_getKnowledgeBaseInfo | Get knowledge base information |
-| cnb_queryKnowledgeBase | Query knowledge base |
+## 主要能力
 
-## How to use
+- 组织与仓库：组织、仓库查询与创建。
+- Git / 研发：读取文件和目录、分支查询与创建、Commit 查询与比较、Commit Status。
+- 代码修改：`cnb_apply_patch` 可在临时 Git 工作区应用 unified diff，提交并推送到指定 CNB 分支。
+- Issue：查询、创建、更新、评论与标签管理。
+- Pull Request：查询、创建、更新、查看变更、评论和合并。
+- CNB Build：查询构建、查看状态和 Stage、启动/停止构建、读取构建日志。
+- Workspace：查询和删除云原生开发环境。
+- Knowledge Base：查询知识库信息和内容。
+
+其中 Git / 研发相关工具包括：
+
+`cnb_get_head`、`cnb_list_branches`、`cnb_get_branch`、`cnb_create_branch`、`cnb_get_content`、`cnb_list_commits`、`cnb_get_commit`、`cnb_compare_commits`、`cnb_get_commit_statuses`、`cnb_apply_patch`、`cnb_get_pull_changes`。
+
+部分早期 CNB Build 工具名称保留了上游的 camelCase 命名，以避免破坏已有客户端兼容性。
+
+## 运行方式
+
+环境要求：Node.js >= 18。
+
+安装和验证：
+
+```bash
+npm ci
+npm run check
+npm run build
+```
+
+### Streamable HTTP
+
+远程 ChatGPT / MCP 客户端建议使用 HTTP 模式：
+
+```bash
+API_TOKEN=<CNB_TOKEN> APP_PORT=3000 npm start
+```
+
+默认端点：
+
+- MCP：`POST /mcp`
+- 健康检查：`GET /healthz`
+- 默认端口：`3000`
+
+如需要无状态模式：
+
+```bash
+MODE_STATELESS=1 API_TOKEN=<CNB_TOKEN> npm start
+```
+
+HTTP 模式下，CNB Token 的优先级为：
+
+1. 请求头 `Authorization: Bearer <token>`
+2. 服务端环境变量 `API_TOKEN`
+3. 服务端环境变量 `CNB_TOKEN`
+
+因此部署到公网时，不要把 Token 写进仓库、镜像或 URL。优先使用部署平台的 Secret；如果 MCP 客户端支持 Bearer 认证，也可以让客户端按请求传入 Token。
 
 ### STDIO
 
-```json
-{
-  "mcpServers": {
-    "cnb": {
-      "command": "npx",
-      "args": ["-y", "-p", "@cnbcool/mcp-server", "cnb-mcp-stdio"],
-      "env": {
-        "API_BASE_URL": "<BASE_URL>", // optional, defualt vaule: https://api.cnb.cool
-        "API_TOKEN": "<YOUR_TOKEN>"
-      }
-    }
-  }
-}
+本地 MCP 客户端可使用 STDIO：
+
+```bash
+npm run build
+API_TOKEN=<CNB_TOKEN> npm run start:stdio
 ```
 
-
-## Prerequisite
-
-1. node >= 18
-
-## How to develop
-
-1. `npm install`
-2. `npx openapi-typescript@5.4.2 https://api.cnb.cool/swagger.json -o src/schema.d.ts`
-3. Copy `.env.example` and rename to `.env` and fill in the values
-4. `npm run build`
-5. `npx @modelcontextprotocol/inspector node dist/stdio.js`
-
-> @modelcontextprotocol/inspector requires Node.js: ^22.7.5
-
-> https://github.com/modelcontextprotocol/inspector?tab=readme-ov-file#requirements
-
-## How to preview
-
-1. npm run build
-2. set mcpServers config:
+示例：
 
 ```json
 {
   "mcpServers": {
     "cnb": {
       "command": "node",
-      "args": ["/path/to/cnbcool/mcp-server/dist/stdio.js"],
+      "args": ["/path/to/cnb-chatgpt-mcp/dist/stdio.js"],
       "env": {
-        "API_BASE_URL": "<BASE_URL>", // optional, defualt vaule: https://api.cnb.cool
-        "API_TOKEN": "<YOUR_TOKEN>"
+        "API_TOKEN": "<CNB_TOKEN>"
       }
     }
   }
 }
 ```
+
+`API_BASE_URL` 可覆盖 CNB API 地址，默认使用 `https://api.cnb.cool`。
+
+## HyperEyes 研发闭环
+
+该 fork 当前支持如下典型流程：
+
+```text
+读取代码 / AGENTS.md / README
+        ↓
+创建或选择研发分支
+        ↓
+生成 unified diff
+        ↓
+cnb_apply_patch
+        ↓
+Commit + Push
+        ↓
+创建 Pull Request
+        ↓
+cnb_get_pull_changes
+        ↓
+查询 / 执行 CNB Build
+        ↓
+检查精确 Commit 的 CI 状态
+        ↓
+合并 Pull Request
+```
+
+`cnb_apply_patch` 使用临时 `GIT_ASKPASS` 注入 Token，不会把凭据写入 Git remote URL 或仓库配置。
+
+## 开发说明
+
+仓库只保留一份 `swagger.json` 作为 OpenAPI 快照，用于生成 `src/schema.d.ts`：
+
+```bash
+npm run generate:schema
+```
+
+`src/schema.d.ts` 是生成文件，不提交到 Git。新增或修改工具时，应优先核对当前 CNB OpenAPI，再更新代码和必要的 schema 快照。
+
+CI 在 Pull Request 和 `main` 分支上执行：
+
+```text
+generate:schema -> eslint -> prettier check -> TypeScript build
+```
+
+面向 AI Coding 的维护约定见 [AGENTS.md](./AGENTS.md)。
+
+## 项目来源
+
+本项目基于 CNB 官方已归档的 `cnb-mcp-server` 继续维护，并针对 ChatGPT 远程 MCP 和持续研发场景进行了扩展。上游已经停止作为官方推荐方案维护，因此本仓库不追求与原仓库发布流程、CNB 内部 CI 配置或 NPM 发布流程保持一致。

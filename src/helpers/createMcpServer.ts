@@ -8,7 +8,7 @@ import { version as packageVersion } from '../../package.json';
 
 export function createMcpServer(req?: Request) {
   const mcpServer = new McpServer({
-    name: 'cnb-mcp-server',
+    name: 'cnb-chatgpt-mcp',
     version: packageVersion
   });
 
