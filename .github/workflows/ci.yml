@@ -5,12 +5,18 @@ on:
     branches:
       - main
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
 
 permissions:
   contents: read
 
 jobs:
   validate:
+    if: github.event_name == 'push' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -51,3 +57,19 @@ jobs:
           API_TOKEN: ci-placeholder
           APP_PORT: 3100
         run: docker compose down --remove-orphans
+
+  cleanup-merged-branch:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete merged branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${HEAD_REF}"
