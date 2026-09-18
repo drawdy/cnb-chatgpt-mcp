@@ -54,7 +54,6 @@ export enum ToolNames {
   // 云原生开发工具
   LIST_WORKSPACES = 'cnb_list_workspaces',
   DELETE_WORKSPACE = 'cnb_delete_workspace',
-  START_WORKSPACE = 'cnb_start_workspace',
   // 知识库工具
   GET_KNOWLEDGE_BASE_INFO = 'cnb_getKnowledgeBaseInfo',
   QUERY_KNOWLEDGE_BASE = 'cnb_queryKnowledgeBase'
