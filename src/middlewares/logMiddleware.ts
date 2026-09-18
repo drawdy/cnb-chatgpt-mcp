@@ -10,7 +10,7 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'cnb-mcp-server' },
+  defaultMeta: { service: 'cnb-chatgpt-mcp' },
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(winston.format.colorize(), winston.format.simple())

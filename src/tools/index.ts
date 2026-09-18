@@ -9,15 +9,18 @@ import registerWorkspaceTools from './workspaceTools.js';
 import registerPullTools from './pullTools.js';
 import registerBuildTools from './buildTools.js';
 import registerKnowledgeBaseTools from './knowledgeBaseTools.js';
+import registerGitTools from './gitTools.js';
 
 export function registerTools(server: McpServer, token?: string) {
+  const resolvedToken = getToken(token);
   const client = new CnbApiClient({
     baseUrl: getBaseUrl(),
-    token: getToken(token)
+    token: resolvedToken
   });
 
   registerGroupTools(server, client);
   registerRepoTools(server, client);
+  registerGitTools(server, client, resolvedToken);
   registerIssueTools(server, client);
   registerWorkspaceTools(server, client);
   registerPullTools(server, client);

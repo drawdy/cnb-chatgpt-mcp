@@ -1,7 +1,8 @@
 {
-  "name": "@cnbcool/mcp-server",
-  "description": "CNB MCP Server. A comprehensive MCP server that provides seamless integration to the CNB's API(https://cnb.cool), offering a wide range of tools for repository management, pipelines operations and collaboration features",
-  "version": "0.6.7",
+  "name": "cnb-chatgpt-mcp",
+  "version": "0.7.0",
+  "private": true,
+  "description": "Maintained CNB MCP Server fork for ChatGPT-driven repository development and CNB automation.",
   "main": "./dist/stdio.js",
   "bin": {
     "cnb-mcp-stdio": "dist/stdio.js",
@@ -10,34 +11,34 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "start": "node dist/stdio.js",
-    "prepare": "husky",
+    "start": "node dist/streamable.js",
+    "start:http": "node dist/streamable.js",
+    "start:stdio": "node dist/stdio.js",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
     "format:check": "prettier --check src",
     "format:fix": "prettier --write src",
-    "build:bundle": "webpack --mode=production"
+    "generate:schema": "npx --yes openapi-typescript@5.4.2 swagger.json -o src/schema.d.ts",
+    "check": "npm run generate:schema && npm run lint && npm run format:check && npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "https://cnb.cool/cnb/tools/cnb-mcp-server"
+    "url": "https://github.com/drawdy/cnb-chatgpt-mcp.git"
+  },
+  "homepage": "https://github.com/drawdy/cnb-chatgpt-mcp",
+  "bugs": {
+    "url": "https://github.com/drawdy/cnb-chatgpt-mcp/issues"
   },
   "keywords": [
     "cnb",
-    "cloud native build",
+    "chatgpt",
     "model context protocol",
-    "mcp server"
+    "mcp",
+    "repository automation"
   ],
   "license": "MIT",
-  "files": [
-    "dist/",
-    "package.json",
-    "CHANGELOG.md",
-    "README.md",
-    "README_zh.md"
-  ],
   "engines": {
-    "node": ">= 18",
+    "node": ">=18",
     "typescript": ">=5.5"
   },
   "dependencies": {
@@ -49,25 +50,14 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.3.0",
-    "@commitlint/config-conventional": "20.3.0",
     "@eslint/js": "9.39.2",
     "@types/express": "5.0.6",
     "@types/node": "^18",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.4",
-    "globals": "17.0.0",
-    "husky": "9.1.7",
-    "lint-staged": "15.5.2",
     "prettier": "3.7.4",
     "typescript": "5.9.3",
     "typescript-eslint": "8.52.0"
-  },
-  "lint-staged": {
-    "**/*": [
-      "eslint --fix src",
-      "prettier --write --ignore-unknown src"
-    ]
   }
 }

@@ -120,24 +120,16 @@ export default function registerIssueTools(server: McpServer, client: CnbApiClie
       labels: z
         .preprocess((val) => (val === null ? undefined : val), z.array(z.string()).optional())
         .describe('一个或多个 Issue 标签'),
-      priority: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('Issue 优先级'),
-      end_date: z
-        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('Issue 截止时间，格式为 YYYY-MM-DD'),
-      start_date: z
-        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('Issue 起始时间，格式为 YYYY-MM-DD')
+      priority: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('Issue 优先级')
     },
-    async ({ repo, title, body, assignees, labels, priority, end_date, start_date }) => {
+    async ({ repo, title, body, assignees, labels, priority }) => {
       try {
         const issue = await createIssue(client, repo, {
           title,
           body,
           assignees,
           labels,
-          priority,
-          end_date,
-          start_date
+          priority
         });
         return formatTextToolResult(JSON.stringify(issue, null, 2), ToolNames.CREATE_ISSUE);
       } catch (error) {
@@ -155,12 +147,6 @@ export default function registerIssueTools(server: McpServer, client: CnbApiClie
       title: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('Issue 标题'),
       body: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('Issue 描述'),
       priority: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('Issue 优先级'),
-      end_date: z
-        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('Issue 截止时间，格式为 YYYY-MM-DD'),
-      start_date: z
-        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('Issue 起始时间，格式为 YYYY-MM-DD'),
       state: z.preprocess((val) => (val === null ? undefined : val), z.string().optional()).describe('Issue 状态'),
       state_reason: z
         .preprocess(
@@ -169,14 +155,12 @@ export default function registerIssueTools(server: McpServer, client: CnbApiClie
         )
         .describe('Issue 状态原因')
     },
-    async ({ repo, issueId, title, body, priority, end_date, start_date, state, state_reason }) => {
+    async ({ repo, issueId, title, body, priority, state, state_reason }) => {
       try {
         const issue = await updateIssue(client, repo, issueId, {
           title,
           body,
           priority,
-          end_date,
-          start_date,
           state,
           state_reason
         });

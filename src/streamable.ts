@@ -28,6 +28,10 @@ const app = express();
 app.use(express.json());
 app.use(logMiddleware);
 
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'cnb-chatgpt-mcp' });
+});
+
 app.post('/mcp', async (req, res) => {
   let transport: StreamableHTTPServerTransport;
 
