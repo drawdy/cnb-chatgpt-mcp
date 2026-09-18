@@ -1,6 +1,7 @@
 import CnbApiClient from './client.js';
 
 export interface PageParams {
+  [key: string]: string | number | boolean | undefined;
   page?: number;
   page_size?: number;
 }
