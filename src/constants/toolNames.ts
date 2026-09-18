@@ -10,6 +10,17 @@ export enum ToolNames {
   GET_CURRENT_REPOSITORY = 'cnb_get_current_repository',
   GET_REPOSITORY = 'cnb_get_repository',
   CREATE_REPOSITORY = 'cnb_create_repository',
+  // Git / 研发工具
+  GET_HEAD = 'cnb_get_head',
+  LIST_BRANCHES = 'cnb_list_branches',
+  GET_BRANCH = 'cnb_get_branch',
+  CREATE_BRANCH = 'cnb_create_branch',
+  GET_CONTENT = 'cnb_get_content',
+  LIST_COMMITS = 'cnb_list_commits',
+  GET_COMMIT = 'cnb_get_commit',
+  COMPARE_COMMITS = 'cnb_compare_commits',
+  GET_COMMIT_STATUSES = 'cnb_get_commit_statuses',
+  APPLY_PATCH = 'cnb_apply_patch',
   // ISSUE 工具
   LIST_ISSUES = 'cnb_list_issues',
   GET_ISSUE = 'cnb_get_issue',
@@ -26,6 +37,7 @@ export enum ToolNames {
   // 合并请求工具
   LIST_PULLS = 'cnb_list_pulls',
   GET_PULL = 'cnb_get_pull',
+  GET_PULL_CHANGES = 'cnb_get_pull_changes',
   CREATE_PULL = 'cnb_create_pull',
   UPDATE_PULL = 'cnb_update_pull',
   MERGE_PULL = 'cnb_merge_pull',
@@ -42,7 +54,6 @@ export enum ToolNames {
   // 云原生开发工具
   LIST_WORKSPACES = 'cnb_list_workspaces',
   DELETE_WORKSPACE = 'cnb_delete_workspace',
-  START_WORKSPACE = 'cnb_start_workspace',
   // 知识库工具
   GET_KNOWLEDGE_BASE_INFO = 'cnb_getKnowledgeBaseInfo',
   QUERY_KNOWLEDGE_BASE = 'cnb_queryKnowledgeBase'

@@ -12,6 +12,18 @@ export const toolDescriptions = {
   [ToolNames.GET_CURRENT_REPOSITORY]: '获取当前工作区对应的CNB平台仓库信息',
   [ToolNames.GET_REPOSITORY]: '获取CNB平台指定仓库的信息',
   [ToolNames.CREATE_REPOSITORY]: '在CNB平台创建一个新仓库',
+  // Git / 研发工具
+  [ToolNames.GET_HEAD]: '获取仓库默认分支',
+  [ToolNames.LIST_BRANCHES]: '列出仓库分支及其HEAD commit',
+  [ToolNames.GET_BRANCH]: '获取指定分支详情',
+  [ToolNames.CREATE_BRANCH]: '从指定分支、tag或commit创建新分支',
+  [ToolNames.GET_CONTENT]: '读取仓库中的文件或目录，可指定branch、tag或commit',
+  [ToolNames.LIST_COMMITS]: '查询仓库commit列表，可按分支、作者和时间过滤',
+  [ToolNames.GET_COMMIT]: '获取指定commit或ref的详细信息',
+  [ToolNames.COMPARE_COMMITS]: '比较两个commit/ref并返回commit与文件diff信息',
+  [ToolNames.GET_COMMIT_STATUSES]: '查询指定commit/ref的check statuses，用于绑定CI结果到精确commit',
+  [ToolNames.APPLY_PATCH]:
+    '在临时Git工作区应用unified diff，提交并推送到CNB分支。适用于多文件研发修改，不会把访问令牌写入remote URL或Git配置',
   // ISSUE 工具
   [ToolNames.LIST_ISSUES]: '获取CNB平台指定仓库的ISSUE列表',
   [ToolNames.GET_ISSUE]: '获取CNB平台指定ISSUE的信息',
@@ -28,6 +40,7 @@ export const toolDescriptions = {
   // 合并请求工具
   [ToolNames.LIST_PULLS]: '获取CNB平台指定仓库的合并请求列表',
   [ToolNames.GET_PULL]: '获取CNB平台指定合并请求的信息',
+  [ToolNames.GET_PULL_CHANGES]: '获取指定合并请求的提交及文件差异，用于代码评审和合并前检查',
   [ToolNames.CREATE_PULL]: '在CNB平台指定的仓库创建一个新合并请求',
   [ToolNames.UPDATE_PULL]: '更新CNB平台指定合并请求的信息',
   [ToolNames.MERGE_PULL]: '合并CNB平台指定的合并请求',
@@ -44,7 +57,6 @@ export const toolDescriptions = {
   // 云原生开发工具
   [ToolNames.LIST_WORKSPACES]: '获取当前用户在CNB平台的云原生开发环境列表',
   [ToolNames.DELETE_WORKSPACE]: '在CNB平台删除指定的云原生开发环境',
-  [ToolNames.START_WORKSPACE]: '在CNB平台启动指定仓库的云原生开发环境',
   // 知识库工具
   [ToolNames.GET_KNOWLEDGE_BASE_INFO]: '获取知识库信息',
   [ToolNames.QUERY_KNOWLEDGE_BASE]: '查询知识库'

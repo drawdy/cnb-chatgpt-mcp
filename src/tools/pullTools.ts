@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ToolNames } from '../constants/toolNames.js';
 import { toolDescriptions } from '../constants/toolDescriptions.js';
 import CnbApiClient from '../api/client.js';
+import { compareCommits } from '../api/git.js';
 import {
   listPulls,
   getPull,
@@ -23,14 +24,20 @@ export default function registerPullTools(server: McpServer, client: CnbApiClien
       state: z
         .preprocess((val) => (val === null ? undefined : val), z.enum(['open', 'closed', 'all']).optional())
         .describe('Pull Request状态'),
-      sort: z
-        .preprocess((val) => (val === null ? undefined : val), z.enum(['created', 'updated']).optional())
-        .describe('排序字段'),
-      direction: z
-        .preprocess((val) => (val === null ? undefined : val), z.enum(['asc', 'desc']).optional())
-        .describe('排序方向'),
-      page: z.number().default(1).describe('页码'),
-      per_page: z.number().default(30).describe('每页数量')
+      authors: z
+        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
+        .describe('按作者过滤，多个值按CNB API约定传递'),
+      reviewers: z
+        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
+        .describe('按评审人过滤'),
+      assignees: z
+        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
+        .describe('按负责人过滤'),
+      base_ref: z
+        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
+        .describe('按目标分支过滤'),
+      page: z.number().int().positive().default(1).describe('页码'),
+      page_size: z.number().int().min(1).max(100).default(30).describe('每页数量')
     },
     async ({ repo, ...params }) => {
       try {
@@ -55,6 +62,29 @@ export default function registerPullTools(server: McpServer, client: CnbApiClien
         return formatTextToolResult(JSON.stringify(pull, null, 2), ToolNames.GET_PULL);
       } catch (error) {
         return formatToolError(error, ToolNames.GET_PULL);
+      }
+    }
+  );
+
+  server.tool(
+    ToolNames.GET_PULL_CHANGES,
+    toolDescriptions[ToolNames.GET_PULL_CHANGES],
+    {
+      repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
+      number: z.number().describe('Pull Request编号')
+    },
+    async ({ repo, number }) => {
+      try {
+        const pull = await getPull(client, repo, number);
+        const base = pull.base?.sha ?? pull.base?.ref;
+        const head = pull.head?.sha ?? pull.head?.ref;
+        if (!base || !head) {
+          throw new Error('Pull Request缺少base/head ref，无法计算变更');
+        }
+        const changes = await compareCommits(client, repo, base, head);
+        return formatTextToolResult(JSON.stringify(changes, null, 2), ToolNames.GET_PULL_CHANGES);
+      } catch (error) {
+        return formatToolError(error, ToolNames.GET_PULL_CHANGES);
       }
     }
   );
@@ -132,8 +162,8 @@ export default function registerPullTools(server: McpServer, client: CnbApiClien
     {
       repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
       number: z.number().describe('Pull Request编号'),
-      page: z.number().default(1).describe('页码'),
-      per_page: z.number().default(30).describe('每页数量')
+      page: z.number().int().positive().default(1).describe('页码'),
+      page_size: z.number().int().min(1).max(100).default(30).describe('每页数量')
     },
     async ({ repo, number, ...params }) => {
       try {
