@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { ToolNames } from '../constants/toolNames.js';
 import { toolDescriptions } from '../constants/toolDescriptions.js';
-import { deleteWorkspace, listWorkspace, startWorkspace } from '../api/workspace.js';
+import { deleteWorkspace, listWorkspace } from '../api/workspace.js';
 import { formatTextToolResult, formatToolError } from '../helpers/formatToolResult.js';
 import CnbApiClient from '../api/client.js';
 
@@ -23,7 +23,7 @@ export default function registerWorkspaceTools(server: McpServer, client: CnbApi
       page: z
         .preprocess((val) => (val === null ? undefined : val), z.number().optional())
         .describe('分页页码，从 1 开始，默认为 1'),
-      page_size: z
+      pageSize: z
         .preprocess((val) => (val === null ? undefined : val), z.number().optional())
         .describe('每页条数，默认为 20，最高 100'),
       slug: z
@@ -33,12 +33,12 @@ export default function registerWorkspaceTools(server: McpServer, client: CnbApi
         .preprocess((val) => (val === null ? undefined : val), z.enum(['running', 'closed']).optional())
         .describe('开发环境状态，running: 开发环境已启动，closed：开发环境已关闭，默认为所有状态')
     },
-    async ({ branch, page, page_size, start, end, slug, status }) => {
+    async ({ branch, page, pageSize, start, end, slug, status }) => {
       try {
         const workspaces = await listWorkspace(client, {
           branch,
           page,
-          page_size,
+          pageSize,
           start,
           end,
           slug,
@@ -69,28 +69,4 @@ export default function registerWorkspaceTools(server: McpServer, client: CnbApi
     }
   );
 
-  server.tool(
-    ToolNames.START_WORKSPACE,
-    toolDescriptions[ToolNames.START_WORKSPACE],
-    {
-      repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
-      branch: z
-        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('分支名或 tag 名，例如：main 或 v1.0.0'),
-      ref: z
-        .preprocess((val) => (val === null ? undefined : val), z.string().optional())
-        .describe('Git ref，例如，refs/heads/main 或 refs/tags/v1.0.0。不传 ref 时默认基于分支启动')
-    },
-    async ({ repo, branch, ref }) => {
-      try {
-        const result = await startWorkspace(client, repo, {
-          branch,
-          ref
-        });
-        return formatTextToolResult(JSON.stringify(result, null, 2), ToolNames.START_WORKSPACE);
-      } catch (error) {
-        return formatToolError(error, ToolNames.START_WORKSPACE);
-      }
-    }
-  );
 }
