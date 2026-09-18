@@ -224,6 +224,14 @@ docker.cnb.cool/bookbridge/public/node:24.21.0-trixie-slim
               dist/
 ~~~
 
+为了提升中国大陆网络环境下的构建稳定性和下载速度，镜像内默认使用：
+
+- npm registry：`https://registry.npmmirror.com`
+- Debian 主仓库：`http://mirrors.tuna.tsinghua.edu.cn/debian`
+- Debian Security：`http://mirrors.tuna.tsinghua.edu.cn/debian-security`
+
+Debian 12+ 容器镜像使用 `/etc/apt/sources.list.d/debian.sources` 的 DEB822 格式，本项目只替换其中的仓库 URI，保留基础镜像原有的 suite / component 配置。这里使用 TUNA 的 HTTP 地址，避免精简基础镜像在安装 `ca-certificates` 之前访问 HTTPS 软件源时出现证书校验问题；APT 仍会使用 Debian 仓库签名校验索引和软件包。
+
 运行镜像额外安装了 `git`，因为 `cnb_apply_patch` 需要在临时工作目录中执行 Git clone / commit / push。
 
 容器默认：
