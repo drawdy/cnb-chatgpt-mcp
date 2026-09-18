@@ -50,7 +50,11 @@ export default class CnbApiClient {
       return response.text() as Promise<T>;
     }
 
-    return response.json() as Promise<T>;
+    const responseText = await response.text();
+    if (!responseText) {
+      return undefined as T;
+    }
+    return JSON.parse(responseText) as T;
   }
 }
 
