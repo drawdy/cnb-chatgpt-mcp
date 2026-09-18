@@ -83,7 +83,7 @@ export async function createBranch(
   name: string,
   startPoint: string
 ): Promise<Branch> {
-  return client.request<Branch>(
+  await client.request<string>(
     'POST',
     `/${repo}/-/git/branches`,
     {
@@ -92,8 +92,10 @@ export async function createBranch(
     },
     {
       header: { 'Content-Type': 'application/json' }
-    }
+    },
+    'text'
   );
+  return getBranch(client, repo, name);
 }
 
 export async function getContent(
