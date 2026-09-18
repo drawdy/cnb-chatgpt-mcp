@@ -46,7 +46,10 @@ export default function registerGitTools(server: McpServer, client: CnbApiClient
     },
     async ({ repo, page, page_size }) => {
       try {
-        return formatTextToolResult(json(await listBranches(client, repo, { page, page_size })), ToolNames.LIST_BRANCHES);
+        return formatTextToolResult(
+          json(await listBranches(client, repo, { page, page_size })),
+          ToolNames.LIST_BRANCHES
+        );
       } catch (error) {
         return formatToolError(error, ToolNames.LIST_BRANCHES);
       }
@@ -92,7 +95,9 @@ export default function registerGitTools(server: McpServer, client: CnbApiClient
     {
       repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
       path: z.string().default('').describe('仓库内文件或目录路径；空字符串表示仓库根目录'),
-      ref: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()).describe('分支、tag 或 commit SHA')
+      ref: z
+        .preprocess((value) => (value === null ? undefined : value), z.string().optional())
+        .describe('分支、tag 或 commit SHA')
     },
     async ({ repo, path, ref }) => {
       try {
@@ -109,7 +114,9 @@ export default function registerGitTools(server: McpServer, client: CnbApiClient
     toolDescriptions[ToolNames.LIST_COMMITS],
     {
       repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
-      sha: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()).describe('分支或 commit'),
+      sha: z
+        .preprocess((value) => (value === null ? undefined : value), z.string().optional())
+        .describe('分支或 commit'),
       author: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()),
       committer: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()),
       since: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()),
@@ -184,7 +191,9 @@ export default function registerGitTools(server: McpServer, client: CnbApiClient
     {
       repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
       branch: z.string().describe('提交并推送到的分支；不存在时自动创建'),
-      base_ref: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()).describe('新建分支时的基准分支/ref'),
+      base_ref: z
+        .preprocess((value) => (value === null ? undefined : value), z.string().optional())
+        .describe('新建分支时的基准分支/ref'),
       patch: z.string().describe('标准 unified diff，可包含多个文件'),
       commit_message: z.string().min(1).describe('Git commit message'),
       author_name: z.preprocess((value) => (value === null ? undefined : value), z.string().optional()),
