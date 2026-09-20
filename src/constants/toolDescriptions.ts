@@ -17,6 +17,7 @@ export const toolDescriptions = {
   [ToolNames.LIST_BRANCHES]: '列出仓库分支及其HEAD commit',
   [ToolNames.GET_BRANCH]: '获取指定分支详情',
   [ToolNames.CREATE_BRANCH]: '从指定分支、tag或commit创建新分支',
+  [ToolNames.DELETE_BRANCH]: '删除指定的非保护分支；拒绝删除保护分支和仓库默认分支',
   [ToolNames.GET_CONTENT]: '读取仓库中的文件或目录，可指定branch、tag或commit',
   [ToolNames.LIST_COMMITS]: '查询仓库commit列表，可按分支、作者和时间过滤',
   [ToolNames.GET_COMMIT]: '获取指定commit或ref的详细信息',
