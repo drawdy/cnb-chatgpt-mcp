@@ -19,7 +19,7 @@
 
 常用研发工具包括：
 
-`cnb_get_content`、`cnb_list_branches`、`cnb_create_branch`、`cnb_list_commits`、`cnb_get_commit`、`cnb_compare_commits`、`cnb_get_commit_statuses`、`cnb_apply_patch`、`cnb_get_pull_changes`。
+`cnb_get_content`、`cnb_list_branches`、`cnb_create_branch`、`cnb_delete_branch`、`cnb_list_commits`、`cnb_get_commit`、`cnb_compare_commits`、`cnb_get_commit_statuses`、`cnb_apply_patch`、`cnb_get_pull_changes`。
 
 ---
 
@@ -154,6 +154,8 @@ https://api.cnb.cool
 查看最近 20 个 Commit
 
 创建一个 feat/example 分支
+
+删除一个已经合并且不再需要的非保护分支
 
 读取某个 Pull Request 的代码变更
 
@@ -369,3 +371,8 @@ npm run generate:schema
 ~~~
 
 面向 AI Coding 的维护约定见 `AGENTS.md`。
+
+
+### 分支删除安全约束
+
+`cnb_delete_branch` 使用 CNB OpenAPI 的分支删除接口。MCP 会在删除前读取目标分支和仓库默认分支，并遵循 fail-closed 策略：仅当 CNB 明确返回 `protected=false` 且目标不是默认分支时才允许删除；保护状态缺失、保护分支和默认分支都会被拒绝。
