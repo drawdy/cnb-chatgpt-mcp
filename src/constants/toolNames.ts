@@ -15,6 +15,7 @@ export enum ToolNames {
   LIST_BRANCHES = 'cnb_list_branches',
   GET_BRANCH = 'cnb_get_branch',
   CREATE_BRANCH = 'cnb_create_branch',
+  DELETE_BRANCH = 'cnb_delete_branch',
   GET_CONTENT = 'cnb_get_content',
   LIST_COMMITS = 'cnb_list_commits',
   GET_COMMIT = 'cnb_get_commit',
