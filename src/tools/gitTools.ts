@@ -5,6 +5,7 @@ import CnbApiClient from '../api/client.js';
 import {
   compareCommits,
   createBranch,
+  deleteBranch,
   getBranch,
   getCommit,
   getCommitStatuses,
@@ -85,6 +86,22 @@ export default function registerGitTools(server: McpServer, client: CnbApiClient
         return formatTextToolResult(json(await createBranch(client, repo, name, start_point)), ToolNames.CREATE_BRANCH);
       } catch (error) {
         return formatToolError(error, ToolNames.CREATE_BRANCH);
+      }
+    }
+  );
+
+  server.tool(
+    ToolNames.DELETE_BRANCH,
+    toolDescriptions[ToolNames.DELETE_BRANCH],
+    {
+      repo: z.string().describe('仓库路径，格式为 {group}/{repo}'),
+      branch: z.string().min(1).describe('要删除的分支名；仅允许删除非保护且非默认分支')
+    },
+    async ({ repo, branch }) => {
+      try {
+        return formatTextToolResult(json(await deleteBranch(client, repo, branch)), ToolNames.DELETE_BRANCH);
+      } catch (error) {
+        return formatToolError(error, ToolNames.DELETE_BRANCH);
       }
     }
   );
