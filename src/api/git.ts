@@ -48,6 +48,20 @@ export type Commit = Record<string, unknown>;
 export type CommitStatus = Record<string, unknown>;
 export type CompareResponse = Record<string, unknown>;
 
+export interface DeleteBranchResult {
+  deleted: true;
+  branch: string;
+}
+
+export function assertDeletableBranch(branch: Branch, head: Branch, requestedBranch: string) {
+  if (branch.protected !== false) {
+    throw new Error(`refusing to delete protected or unverified branch: ${requestedBranch}`);
+  }
+  if (head.name === requestedBranch) {
+    throw new Error(`refusing to delete default branch: ${requestedBranch}`);
+  }
+}
+
 function addQuery(path: string, client: CnbApiClient, params?: Record<string, string | number | boolean | undefined>) {
   const url = new URL(path, client.baseUrl);
   for (const [key, value] of Object.entries(params ?? {})) {
@@ -96,6 +110,15 @@ export async function createBranch(
     'text'
   );
   return getBranch(client, repo, name);
+}
+
+export async function deleteBranch(client: CnbApiClient, repo: string, branch: string): Promise<DeleteBranchResult> {
+  const branchInfo = await getBranch(client, repo, branch);
+  const head = await getHead(client, repo);
+  assertDeletableBranch(branchInfo, head, branch);
+
+  await client.request<void>('DELETE', `/${repo}/-/git/branches/${encodeURIComponent(branch)}`);
+  return { deleted: true, branch };
 }
 
 export async function getContent(
